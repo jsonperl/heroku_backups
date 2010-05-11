@@ -13,3 +13,6 @@ Things that could be done:
 * Most of you may not care about the yaml_db portion.  I like it because I use mysql locally, even though I'm running on postgres at Heroku.  You could easily rip this part out.
 
 Hope this helps some folks.
+
+Oh and thanks a ton to Nick Merwin for getting me rolling!
+http://gist.github.com/205399
