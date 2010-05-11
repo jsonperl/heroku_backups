@@ -3,7 +3,7 @@ These rake tasks are basically a cleaned up and consolidated version of everythi
 You can use it to run a nightly backup cron, or to transfer between environments. 
 
 heroku rake db:backup --app from_application
-heroku rake db:restore -app to_application
+heroku rake db:restore --app to_application
 
 Notes: 
 * You'll need to place your backup bucket name where it indicates in database.rake
