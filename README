@@ -1,0 +1,15 @@
+These rake tasks are basically a cleaned up and consolidated version of everything good I could find related to backup of heroku databases.  It essentially takes advantage of pg_dump and pg_restore capailities of postgres.
+
+You can use it to run a nightly backup cron, or to transfer between environments. 
+
+heroku rake db:backup --app from_application
+heroku rake db:restore -app to_application
+
+Notes: 
+* You'll need to place your backup bucket name where it indicates in database.rake
+* You will need aws_s3 and yaml_db, since we're dumping both a database agnostic yaml file and a pg_dump compressed backup
+
+Things that could be done:
+* Most of you may not care about the yaml_db portion.  I like it because I use mysql locally, even though I'm running on postgres at Heroku.  You could easily rip this part out.
+
+Hope this helps some folks.
