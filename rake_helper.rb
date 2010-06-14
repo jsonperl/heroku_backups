@@ -23,12 +23,6 @@ def pg_restore(timestamp)
   # -x : no privileges
 end
 
-def yaml_dump(timestamp)
-  filename = "tmp/#{timestamp}.yml"
-  SerializationHelper::Base.new(YamlDb::Helper).dump(filename)
-  filename
-end
-
 def connect_s3!
   config = YAML.load(File.open("#{RAILS_ROOT}/config/amazon_s3.yml"))[RAILS_ENV]
   AWS::S3::Base.establish_connection!(

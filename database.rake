@@ -1,5 +1,4 @@
 require 'rake'
-require 'tasks/yaml_db'
 require 'aws/s3'
 require 'tasks/rake_helper'
 
@@ -22,7 +21,7 @@ namespace :db do
     puts "Retrieving #{filename}..."
     s3_download(BACKUP_BUCKET, filename)
 
-    puts "Decompressing backups..."
+    puts "Decompressing backup..."
     `tar -xzf tmp/#{filename}`
 
     puts "Restoring database..."
@@ -40,11 +39,8 @@ namespace :db do
     
     puts "Creating postgres dump..."
     pg_dump(timestamp)
-    
-    puts "Creating yaml dump..."
-    yaml_dump(timestamp)
 
-    puts "Compressing backups..."
+    puts "Compressing backup..."
     tar_filename = "bkp.#{timestamp}.tar.gz"
     `tar -czf tmp/#{tar_filename} tmp/#{timestamp}*`
 

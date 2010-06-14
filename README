@@ -7,12 +7,9 @@ heroku rake db:restore --app to_application
 
 Notes: 
 * You'll need to place your backup bucket name where it indicates in database.rake
-* You will need aws_s3 and yaml_db, since we're dumping both a database agnostic yaml file and a pg_dump compressed backup
+* You will need aws_s3 since we're dumping a pg_dump compressed backup
 * By default the restore will grab the latest backup that resides in the bucket out on s3.  To specify a specific point in time backup, simply add a "filename=bkp.yourfilename.tar.gz" to the task.
 ex: heroku rake db:restore filename=bkp.1273533572.tar.gz --app to_application
-
-Things that could be done:
-* Most of you may not care about the yaml_db portion.  I like it because I use mysql locally, even though I'm running on postgres at Heroku.  You could easily rip this part out.
 
 Hope this helps some folks.
 
