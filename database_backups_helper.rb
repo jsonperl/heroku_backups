@@ -17,8 +17,7 @@ def pg_restore(timestamp)
   filename = "tmp/#{timestamp}.pgdump"
 
   ENV['PGPASSWORD'] = settings[:password]
-  `pg_restore -c -O -x -h #{settings[:host]} -U #{settings[:username]} -d #{settings[:db_name]} #{filename}`
-  # -c : clean
+  `pg_restore -i -O -x -h #{settings[:host]} -U #{settings[:username]} -d #{settings[:db_name]} #{filename}`
   # -O : no owner
   # -x : no privileges
 end
