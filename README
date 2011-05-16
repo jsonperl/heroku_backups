@@ -1,17 +1,29 @@
-These rake tasks are basically a cleaned up and consolidated version of everything good I could find related to backup of heroku databases.  It essentially takes advantage of pg_dump and pg_restore capailities of postgres.
+Rake tasks for backing up and restoring your Heroku Postgres databases to Amazon S3. You can use it to run a nightly backup cron, or to transfer between environments. 
 
-You can use it to run a nightly backup cron, or to transfer between environments. 
+Setup:
+1) Add the aws-s3 gem to your Gemfile
+gem 'aws-s3'
 
-heroku rake db:backup --app from_application
-heroku rake db:restore --app to_application
+2) Edit the backups.rake and fill in these required values.  If the bucket doesn't yet exist, it will create it.  Keep in mind buckets must be globally unique, so pick something specific (my-sweet-app-backups). Ideally these settings will come from a config file, I like to use SettingsLogic (https://github.com/binarylogic/settingslogic).
+BACKUP_BUCKET = '<your backup bucket>'
+ACCESS_KEY_ID = '<your aws access key id>'
+SECRET_KEY    = '<your aws secret key>'
+
+Usage:
+a) You can put it in your cronfile like so
+desc "Cron"
+task :cron => :environment do
+  Rake::Task['backups:snapshot'].invoke if Time.now.hour == 2 # runs at 2am
+end
+
+b) And/or you can call the tasks manually
+heroku rake backups:snapshot --app from_application
+heroku rake backup:restore --app to_application
+heroku rake backup:restore filename=bkp.1273533572.tar.gz --app to_application
 
 Notes: 
-* You'll need to place your backup bucket name where it indicates in database.rake
-* You will need aws_s3 since we're dumping a pg_dump compressed backup
 * By default the restore will grab the latest backup that resides in the bucket out on s3.  To specify a specific point in time backup, simply add a "filename=bkp.yourfilename.tar.gz" to the task.
 ex: heroku rake db:restore filename=bkp.1273533572.tar.gz --app to_application
-
-Hope this helps some folks.
 
 Oh and thanks a ton to Nick Merwin for getting me rolling!
 http://gist.github.com/205399
