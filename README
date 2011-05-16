@@ -11,7 +11,7 @@ SECRET_KEY    = '<your aws secret key>'
 
 Usage:
 a) You can put it in your cronfile like so
-desc "Cron"
+desc "Cron fights for the users"
 task :cron => :environment do
   Rake::Task['backups:snapshot'].invoke if Time.now.hour == 2 # runs at 2am
 end
