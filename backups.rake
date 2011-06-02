@@ -5,8 +5,12 @@ SECRET_KEY    = '<your aws secret key>'
 namespace :backups do
 
   desc "Restores db from s3 backup file"
-  task :restore => [:environment, :reset] do
+  task :restore => :environment do
     require 'aws/s3'
+    
+    Rake::Task['backups:kill_postgres_connections'].invoke
+    Rake::Task['db:drop'].invoke
+    Rake::Task['db:create'].invoke
 
     if ENV['filename']
       filename = ENV['filename']
@@ -53,17 +57,34 @@ namespace :backups do
     puts "Done @ #{Time.now}"
   end
 
+  task :kill_postgres_connections => :environment do
+    db_name = "#{File.basename(Rails.root)}_#{Rails.env}"
+    sh = "ps xa | grep postgres: | grep #{db_name} | grep -v grep | awk '{print $1}' | xargs kill"
+    `#{sh}`
+  end
+
   def get_db_settings
-    matches = ENV['DATABASE_URL'].match(/postgres:\/\/([^:]+):([^@]+)@([^\/]+)\/(.+)/)
-    {:username => matches[1], :password => matches[2], :host => matches[3], :db_name => matches[4]}
+    remote = ENV['DATABASE_URL']
+
+    if remote
+      matches = ENV['DATABASE_URL'].match(/postgres:\/\/([^:]+):([^@]+)@([^\/]+)\/(.+)/)
+      settings = {:username => matches[1], :password => matches[2], :host => matches[3], :db_name => matches[4]}
+    else
+      db_options = YAML.load_file(File.join(Rails.root, 'config', 'database.yml'))[Rails.env].symbolize_keys
+      settings = {:username => db_options[:username], :password => db_options[:password], :host => db_options[:hostname], :db_name => db_options[:database]}
+    end
+
+    settings
   end
 
   def pg_dump(timestamp)
     settings = get_db_settings
     filename = "tmp/#{timestamp}.pgdump"
 
-    ENV['PGPASSWORD'] = settings[:password]
-    `pg_dump -i -h #{settings[:host]} -U #{settings[:username]} -F c #{settings[:db_name]} > #{filename}`
+    ENV['PGPASSWORD'] = settings[:password] if settings[:password]
+    user = settings[:username] ? "-U #{settings[:username]} " : ''
+
+    `pg_dump -i -h #{settings[:host]} #{user}-F c #{settings[:db_name]} > #{filename}`
     filename
   end
 
@@ -71,15 +92,18 @@ namespace :backups do
     settings = get_db_settings
     filename = "tmp/#{timestamp}.pgdump"
 
-    ENV['PGPASSWORD'] = settings[:password]
-    `pg_restore -i -O -x -h #{settings[:host]} -U #{settings[:username]} -d #{settings[:db_name]} #{filename}`
+    ENV['PGPASSWORD'] = settings[:password] if settings[:password]
+    user = settings[:username] ? "-U #{settings[:username]} " : ''
+
+    puts "pg_restore -i -O -x -h #{settings[:host]} -U #{settings[:username]} -d #{settings[:db_name]} #{filename}"
+    `pg_restore -i -O -x -h #{settings[:host]} #{user}-d #{settings[:db_name]} #{filename}`
     # -O : no owner
     # -x : no privileges
   end
 
   def connect_s3!
     AWS::S3::Base.establish_connection!(
-    :access_key_id => ACCESS_KEY,
+    :access_key_id => ACCESS_KEY_ID,
     :secret_access_key => SECRET_KEY
     )
   end
@@ -93,7 +117,7 @@ namespace :backups do
   def s3_download(bucket_name, file_name)
     connect_s3!
 
-    open("tmp/#{file_name}", 'w') do |file|
+    open("tmp/#{file_name}", 'w+b', 0644) do |file|
       AWS::S3::S3Object.stream(file_name, bucket_name) do |chunk|
         file.write chunk
       end
