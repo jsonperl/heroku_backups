@@ -21,6 +21,9 @@ heroku rake backups:snapshot --app from_application
 heroku rake backup:restore --app to_application
 heroku rake backup:restore filename=bkp.1273533572.tar.gz --app to_application
 
+c) Restore locally from remote backup!
+rake backup:restore filename=bkp.1273533572.tar.gz
+
 Notes: 
 * By default the restore will grab the latest backup that resides in the bucket out on s3.  To specify a specific point in time backup, simply add a "filename=bkp.yourfilename.tar.gz" to the task.
 ex: heroku rake db:restore filename=bkp.1273533572.tar.gz --app to_application
