@@ -6,8 +6,6 @@ namespace :backups do
   task :restore => :environment do
     require 'aws/s3'
 
-    Rake::Task['db:reset'].invoke
-
     if ENV['filename']
       filename = ENV['filename']
     else
