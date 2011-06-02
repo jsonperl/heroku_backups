@@ -84,11 +84,8 @@ namespace :backups do
 
     ENV['PGPASSWORD'] = settings[:password] if settings[:password]
     user = settings[:username] ? "-U #{settings[:username]} " : ''
-
-    puts "pg_restore -i -O -x -h #{settings[:host]} -U #{settings[:username]} -d #{settings[:db_name]} #{filename}"
-    `pg_restore -i -O -x -h #{settings[:host]} #{user}-d #{settings[:db_name]} #{filename}`
-    # -O : no owner
-    # -x : no privileges
+   
+    `pg_restore --verbose --clean --no-acl --no-owner -h #{settings[:host]} #{user}-d #{settings[:db_name]} #{filename}`
   end
 
   def connect_s3!
