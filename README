@@ -4,10 +4,16 @@ Setup:
 1) Add the aws-s3 gem to your Gemfile
 gem 'aws-s3'
 
-2) Edit the backups.rake and fill in these required values.  If the bucket doesn't yet exist, it will create it.  Keep in mind buckets must be globally unique, so pick something specific (my-sweet-app-backups). Ideally these settings will come from a config file, I like to use SettingsLogic (https://github.com/binarylogic/settingslogic).
+2) Edit the backups.rake and fill in your backup bucket name.  If the bucket doesn't yet exist, it will create it.  Keep in mind buckets must be globally unique, so pick something specific (my-sweet-app-backups). Ideally these settings will come from a config file, I like to use SettingsLogic (https://github.com/binarylogic/settingslogic).
 BACKUP_BUCKET = '<your backup bucket>'
-ACCESS_KEY_ID = '<your aws access key id>'
-SECRET_KEY    = '<your aws secret key>'
+
+3) Create a file called amazon_s3.yml in your config folder
+production:
+  access_key_id: key
+  secret_access_key: key
+development:
+  access_key_id: key
+  secret_access_key: key
 
 Usage:
 a) You can put it in your cronfile like so

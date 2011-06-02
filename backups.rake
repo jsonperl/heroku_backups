@@ -1,13 +1,11 @@
 BACKUP_BUCKET = '<your backup bucket>'
-ACCESS_KEY_ID = '<your aws access key id>'
-SECRET_KEY    = '<your aws secret key>'
 
 namespace :backups do
 
   desc "Restores db from s3 backup file"
   task :restore => :environment do
     require 'aws/s3'
-    
+
     Rake::Task['db:reset'].invoke
 
     if ENV['filename']
@@ -94,9 +92,11 @@ namespace :backups do
   end
 
   def connect_s3!
+    config = YAML.load(File.open("#{RAILS_ROOT}/config/amazon_s3.yml"))[RAILS_ENV]
+    
     AWS::S3::Base.establish_connection!(
-    :access_key_id => ACCESS_KEY_ID,
-    :secret_access_key => SECRET_KEY
+    :access_key_id => config['access_key_id'],
+    :secret_access_key => config['secret_access_key']
     )
   end
 
