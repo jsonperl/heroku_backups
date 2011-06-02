@@ -8,9 +8,7 @@ namespace :backups do
   task :restore => :environment do
     require 'aws/s3'
     
-    Rake::Task['backups:kill_postgres_connections'].invoke
-    Rake::Task['db:drop'].invoke
-    Rake::Task['db:create'].invoke
+    Rake::Task['db:reset'].invoke
 
     if ENV['filename']
       filename = ENV['filename']
@@ -55,12 +53,6 @@ namespace :backups do
     `rm tmp/#{timestamp}*`
 
     puts "Done @ #{Time.now}"
-  end
-
-  task :kill_postgres_connections => :environment do
-    db_name = "#{File.basename(Rails.root)}_#{Rails.env}"
-    sh = "ps xa | grep postgres: | grep #{db_name} | grep -v grep | awk '{print $1}' | xargs kill"
-    `#{sh}`
   end
 
   def get_db_settings
