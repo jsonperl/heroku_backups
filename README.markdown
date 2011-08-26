@@ -9,9 +9,11 @@
 
 ### Installation
 Place in your gemfile:
+
     gem install heroku_backups
 
 Place a file name amazon_s3.yml in your config folder:
+
     production:
       bucket: yourapp-production
       access_key_id: your-key
@@ -37,6 +39,7 @@ Place a file name amazon_s3.yml in your config folder:
 
 ## Resque Jobs
 Since snapshots and restores can potentially be long operations, two Resque jobs have been provided:
+
     Resque.enqueue(HerokuBackups::SnapshotJob)
     Resque.enqueue(HerokuBackups::RestoreJob, environment, filename)
 
@@ -44,12 +47,14 @@ environment and filename are optional parameters and instruct the job which back
 
 ## Automate backups
 Place something like the following task (or add to it) in your lib/tasks/cron.rake
+
     desc "Cron fights for the users"
     task :cron => :environment do
       HerokuBackups::Backups.snapshot if Time.now.hour == 2 # runs at 2am
     end
 
 or better yet, drop a Resque job!
+
     desc "Cron fights for the users"
     task :cron => :environment do
       Resque.enqueue(HerokuBackups::SnapshotJob) if Time.now.hour % 4 # runs every 4 hours
@@ -57,4 +62,5 @@ or better yet, drop a Resque job!
 
 ## OH $h!t, I need to Restore
 Use the backups:restore rake task or to avoid your long running job from getting killed, connect to heroku console and:
+
     Resque.enqueue(HerokuBackups::RestoreJob)
