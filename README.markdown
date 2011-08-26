@@ -1,5 +1,5 @@
 # Heroku Backups Gem for Rails 3
-## Amazon S3 Backup and Restore capabilites for your Heroku app
+## Amazon S3 Backup and Restore capabilities for your Heroku app
 
 ### Things you can do:
 * Run automated backups (via cron, or Resque)
