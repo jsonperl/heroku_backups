@@ -8,9 +8,9 @@
 * Restore your production database to your development machine
 
 ### Installation
-Place in your gemfile:
+Place in your Gemfile:
 
-    gem install heroku_backups
+    gem 'heroku_backups'
 
 Place a file name amazon_s3.yml in your config folder:
 
