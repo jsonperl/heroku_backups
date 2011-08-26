@@ -1,38 +1,68 @@
-Rake tasks for backing up and restoring your Heroku Postgres databases to Amazon S3. You can use it to run a nightly backup cron, or to transfer between environments. 
+= Heroku Backups Gem for Rails 3
+== Amazon S3 backed Backup and restore capabilites for your heroku application.
 
-Setup:
-1) Add the aws-s3 gem to your Gemfile
-gem 'aws-s3'
+=== Things you can do:
+* Run automated backups (via cron, or Resque)
+* Restore your database from a point in time backup
+* Move an entire database from one environment to another
+* Restore your production database to your development machine
 
-2) Edit the backups.rake and fill in your backup bucket name.  If the bucket doesn't yet exist, it will create it.  Keep in mind buckets must be globally unique, so pick something specific (my-sweet-app-backups). Ideally these settings will come from a config file, I like to use SettingsLogic (https://github.com/binarylogic/settingslogic).
-BACKUP_BUCKET = '<your backup bucket>'
-
-3) Create a file called amazon_s3.yml in your config folder
+=== Installation
+Place in your gemfile:
+```ruby
+gem install heroku_backups
+```
+Place a file name amazon_s3.yml in your config folder:
+```ruby
 production:
-  access_key_id: key
-  secret_access_key: key
+  bucket: yourapp-production
+  access_key_id: your-key
+  secret_access_key: your-secret
+staging:
+  bucket: yourapp-staging
+  access_key_id: your-key
+  secret_access_key: your-secret
 development:
-  access_key_id: key
-  secret_access_key: key
+  bucket: yourapp-staging
+  access_key_id: your-key
+  secret_access_key: your-secret
+```
 
-Usage:
-a) You can put it in your cronfile like so
+== Rake Tasks
+* backups:snapshot # Snapshots the current environment's database and stores on S3
+* backups:restore  # Restores the latest production backup to your current environment
+* backups:restore FILENAME=bkp.1273533572.tar.gz # Restores this backup file from production to your current environment
+* backups:restore RAILS_ENV=staging # Restores the latest staging backup from to your current environment
+* heroku rake backups:snapshot --app from_application # Snapshot a particular heroku app
+* heroku rake backups:restore --app to_application # Restore from production to a particular heroku app
+* heroku rake backups:restore filename=bkp.1273533572.tar.gz --app to_application # Restore a backup file to a particular heroku app
+
+== Resque Jobs
+Since snapshots and restores can potentially be long operations, two Resque jobs have been provided:
+```ruby
+Resque.enqueue(HerokuBackups::SnapshotJob)
+Resque.enqueue(HerokuBackups::RestoreJob, environment, filename)
+```
+environment and filename are optional parameters and instruct the job which backup file to restore and from which environment
+
+== Automate backups
+Place something like the following task (or add to it) in your lib/tasks/cron.rake
+```ruby
 desc "Cron fights for the users"
 task :cron => :environment do
-  Rake::Task['backups:snapshot'].invoke if Time.now.hour == 2 # runs at 2am
+  HerokuBackups::Backups.snapshot if Time.now.hour == 2 # runs at 2am
 end
+```
+or better yet, drop a Resque job!
+```ruby
+desc "Cron fights for the users"
+task :cron => :environment do
+  Resque.enqueue(HerokuBackups::SnapshotJob) if Time.now.hour % 4 # runs every 4 hours
+end
+```
 
-b) And/or you can call the tasks manually
-heroku rake backups:snapshot --app from_application
-heroku rake backups:restore --app to_application
-heroku rake backups:restore filename=bkp.1273533572.tar.gz --app to_application
-
-c) Restore locally from remote backup!
-rake backups:restore filename=bkp.1273533572.tar.gz
-
-Notes: 
-* By default the restore will grab the latest backup that resides in the bucket out on s3.  To specify a specific point in time backup, simply add a "filename=bkp.yourfilename.tar.gz" to the task.
-ex: heroku rake db:restore filename=bkp.1273533572.tar.gz --app to_application
-
-Oh and thanks a ton to Nick Merwin for getting me rolling!
-http://gist.github.com/205399
+== OH $h!t, I need to Restore
+Use the backups:restore rake task or to avoid your long running job from getting killed, connect to heroku console and:
+```ruby
+Resque.enqueue(HerokuBackups::RestoreJob)
+```
