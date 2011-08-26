@@ -1,13 +1,13 @@
-= Heroku Backups Gem for Rails 3
-== Amazon S3 backed Backup and restore capabilites for your heroku application.
+# Heroku Backups Gem for Rails 3
+## Amazon S3 backed Backup and restore capabilites for your heroku application.
 
-=== Things you can do:
+### Things you can do:
 * Run automated backups (via cron, or Resque)
 * Restore your database from a point in time backup
 * Move an entire database from one environment to another
 * Restore your production database to your development machine
 
-=== Installation
+### Installation
 Place in your gemfile:
 ```ruby
 gem install heroku_backups
@@ -28,7 +28,7 @@ development:
   secret_access_key: your-secret
 ```
 
-== Rake Tasks
+## Rake Tasks
 * backups:snapshot # Snapshots the current environment's database and stores on S3
 * backups:restore  # Restores the latest production backup to your current environment
 * backups:restore FILENAME=bkp.1273533572.tar.gz # Restores this backup file from production to your current environment
@@ -37,7 +37,7 @@ development:
 * heroku rake backups:restore --app to_application # Restore from production to a particular heroku app
 * heroku rake backups:restore filename=bkp.1273533572.tar.gz --app to_application # Restore a backup file to a particular heroku app
 
-== Resque Jobs
+## Resque Jobs
 Since snapshots and restores can potentially be long operations, two Resque jobs have been provided:
 ```ruby
 Resque.enqueue(HerokuBackups::SnapshotJob)
@@ -45,7 +45,7 @@ Resque.enqueue(HerokuBackups::RestoreJob, environment, filename)
 ```
 environment and filename are optional parameters and instruct the job which backup file to restore and from which environment
 
-== Automate backups
+## Automate backups
 Place something like the following task (or add to it) in your lib/tasks/cron.rake
 ```ruby
 desc "Cron fights for the users"
@@ -61,7 +61,7 @@ task :cron => :environment do
 end
 ```
 
-== OH $h!t, I need to Restore
+## OH $h!t, I need to Restore
 Use the backups:restore rake task or to avoid your long running job from getting killed, connect to heroku console and:
 ```ruby
 Resque.enqueue(HerokuBackups::RestoreJob)
