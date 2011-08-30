@@ -64,3 +64,7 @@ or better yet, drop a Resque job!
 Use the backups:restore rake task or to avoid your long running job from getting killed, connect to heroku console and:
 
     Resque.enqueue(HerokuBackups::RestoreJob)
+
+## License
+
+heroku_backups is released under the MIT license.
