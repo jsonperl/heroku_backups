@@ -57,7 +57,7 @@ or better yet, drop a Resque job!
 
     desc "Cron fights for the users"
     task :cron => :environment do
-      Resque.enqueue(HerokuBackups::SnapshotJob) if Time.now.hour % 4 # runs every 4 hours
+      Resque.enqueue(HerokuBackups::SnapshotJob) if (Time.now.hour % 4).zero? # runs every 4 hours
     end
 
 ## OH $h!t, I need to Restore
